@@ -1,44 +1,44 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
 <meta name="generator" content="Hexo 5.3.0">
-  <link rel="apple-touch-icon" sizes="180x180" href="/blog/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/blog/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/blog/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/blog/images/logo.svg" color="#222">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
 
-<link rel="stylesheet" href="/blog/css/main.css">
+<link rel="stylesheet" href="/css/main.css">
 
 
-<link rel="stylesheet" href="/blog/lib/font-awesome/css/all.min.css">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"leexiaobu.github.io","root":"/blog/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+    var CONFIG = {"hostname":"leexiaobu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="问题汇总 JDK1.7时HashMap在并发情况下为什么可能会成环？尾插法会成环吗？ 为什么1.7下选择头插法，而不是不会成环的尾插法？ 1.8以后的为什么选择红黑树？为什么在链表长度在8以后才转成红黑树？红黑树会有成环问题吗？ 1.7和1.8中哪些方法做了改变，为什么有这些改变。。。(resize,clone..)   1.7源码  个人理解 JDK1.7时HashMap在并发情况下为什么可能会">
+  <meta name="description" content="问题汇总 JDK1.7时HashMap在并发情况下为什么可能会成环？尾插法会成环吗？ 为什么1.7下选择头插法，而不是不会成环的尾插法？ 1.8以后的为什么选择红黑树？为什么在链表长度在8以后才转成红黑树？红黑树会有成环问题吗？ 1.7和1.8中哪些方法做了改变，为什么有这些改变。。。(resize,clone..)   1.7源码  个人理解1. JDK1.7时HashMap在并发情况下为什么">
 <meta property="og:type" content="article">
 <meta property="og:title" content="学习HashMap中的几点疑问">
-<meta property="og:url" content="https://leexiaobu.github.io/blog/2021/01/12/HashMap/index.html">
+<meta property="og:url" content="https://leexiaobu.github.io/2021/01/12/HashMap/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="问题汇总 JDK1.7时HashMap在并发情况下为什么可能会成环？尾插法会成环吗？ 为什么1.7下选择头插法，而不是不会成环的尾插法？ 1.8以后的为什么选择红黑树？为什么在链表长度在8以后才转成红黑树？红黑树会有成环问题吗？ 1.7和1.8中哪些方法做了改变，为什么有这些改变。。。(resize,clone..)   1.7源码  个人理解 JDK1.7时HashMap在并发情况下为什么可能会">
-<meta property="og:locale" content="en_US">
+<meta property="og:description" content="问题汇总 JDK1.7时HashMap在并发情况下为什么可能会成环？尾插法会成环吗？ 为什么1.7下选择头插法，而不是不会成环的尾插法？ 1.8以后的为什么选择红黑树？为什么在链表长度在8以后才转成红黑树？红黑树会有成环问题吗？ 1.7和1.8中哪些方法做了改变，为什么有这些改变。。。(resize,clone..)   1.7源码  个人理解1. JDK1.7时HashMap在并发情况下为什么">
+<meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://raw.githubusercontent.com/Leexiaobu/image/main/20210114144916.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/Leexiaobu/image/main/20210114144928.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/Leexiaobu/image/main/20210114144954.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/Leexiaobu/image/main/20210114145011.png">
 <meta property="article:published_time" content="2021-01-12T14:58:10.000Z">
-<meta property="article:modified_time" content="2021-01-14T07:19:02.327Z">
+<meta property="article:modified_time" content="2021-01-15T04:44:44.789Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="java 源码 HashMap">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://raw.githubusercontent.com/Leexiaobu/image/main/20210114144916.png">
 
-<link rel="canonical" href="https://leexiaobu.github.io/blog/2021/01/12/HashMap/">
+<link rel="canonical" href="https://leexiaobu.github.io/2021/01/12/HashMap/">
 
 
 <script id="page-configurations">
@@ -47,7 +47,7 @@
     sidebar: "",
     isHome : false,
     isPost : true,
-    lang   : 'en'
+    lang   : 'zh-CN'
   };
 </script>
 
@@ -91,7 +91,7 @@
     <header class="header" itemscope itemtype="http://schema.org/WPHeader">
       <div class="header-inner"><div class="site-brand-container">
   <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar">
+    <div class="toggle" aria-label="切换导航栏">
       <span class="toggle-line toggle-line-first"></span>
       <span class="toggle-line toggle-line-middle"></span>
       <span class="toggle-line toggle-line-last"></span>
@@ -100,7 +100,7 @@
 
   <div class="site-meta">
 
-    <a href="/blog/" class="brand" rel="start">
+    <a href="/" class="brand" rel="start">
       <span class="logo-line-before"><i></i></span>
       <h1 class="site-title">Hexo</h1>
       <span class="logo-line-after"><i></i></span>
@@ -120,17 +120,27 @@
   <ul id="menu" class="main-menu menu">
         <li class="menu-item menu-item-home">
 
-    <a href="/blog/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
 
   </li>
         <li class="menu-item menu-item-categories">
 
-    <a href="/blog/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
 
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/blog/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
 
   </li>
   </ul>
@@ -160,11 +170,11 @@
     
   
   
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://leexiaobu.github.io/blog/2021/01/12/HashMap/">
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://leexiaobu.github.io/2021/01/12/HashMap/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/blog/images/avatar.gif">
+      <meta itemprop="image" content="/images/avatar.gif">
       <meta itemprop="name" content="John Doe">
       <meta itemprop="description" content="">
     </span>
@@ -182,17 +192,26 @@
               <span class="post-meta-item-icon">
                 <i class="far fa-calendar"></i>
               </span>
-              <span class="post-meta-item-text">Posted on</span>
+              <span class="post-meta-item-text">发表于</span>
 
-              <time title="Created: 2021-01-12 22:58:10" itemprop="dateCreated datePublished" datetime="2021-01-12T22:58:10+08:00">2021-01-12</time>
+              <time title="创建时间：2021-01-12 22:58:10" itemprop="dateCreated datePublished" datetime="2021-01-12T22:58:10+08:00">2021-01-12</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-01-14 15:19:02" itemprop="dateModified" datetime="2021-01-14T15:19:02+08:00">2021-01-14</time>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-01-15 12:44:44" itemprop="dateModified" datetime="2021-01-15T12:44:44+08:00">2021-01-15</time>
               </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a>
+                </span>
+            </span>
 
           
   
@@ -201,10 +220,10 @@
       <span class="post-meta-item-icon">
         <i class="far fa-comment"></i>
       </span>
-      <span class="post-meta-item-text">Valine: </span>
+      <span class="post-meta-item-text">Valine：</span>
     
-    <a title="valine" href="/blog/2021/01/12/HashMap/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/blog/2021/01/12/HashMap/" itemprop="commentCount"></span>
+    <a title="valine" href="/2021/01/12/HashMap/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2021/01/12/HashMap/" itemprop="commentCount"></span>
     </a>
   </span>
   
@@ -219,7 +238,8 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h4 id="问题汇总"><a href="#问题汇总" class="headerlink" title="问题汇总"></a>问题汇总</h4><ol>
+        <a id="more"></a>
+<h4 id="问题汇总"><a href="#问题汇总" class="headerlink" title="问题汇总"></a>问题汇总</h4><ol>
 <li>JDK1.7时HashMap在并发情况下为什么可能会成环？尾插法会成环吗？</li>
 <li>为什么1.7下选择头插法，而不是不会成环的尾插法？</li>
 <li>1.8以后的为什么选择红黑树？为什么在链表长度在8以后才转成红黑树？红黑树会有成环问题吗？</li>
@@ -228,9 +248,7 @@
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://github.com/zxiaofan/JDK/blob/master/JDK1.7/src/java/util/HashMap.java">1.7源码</a></p>
 </blockquote>
-<h4 id="个人理解"><a href="#个人理解" class="headerlink" title="个人理解"></a>个人理解</h4><ol>
-<li><p><strong>JDK1.7时HashMap在并发情况下为什么可能会成环？尾插法会成环吗？</strong></p>
-<p>先看下put方法的在1.7下的源码：</p>
+<h4 id="个人理解"><a href="#个人理解" class="headerlink" title="个人理解"></a>个人理解</h4><h5 id="1-JDK1-7时HashMap在并发情况下为什么可能会成环？尾插法会成环吗？"><a href="#1-JDK1-7时HashMap在并发情况下为什么可能会成环？尾插法会成环吗？" class="headerlink" title="1. JDK1.7时HashMap在并发情况下为什么可能会成环？尾插法会成环吗？"></a>1. <strong>JDK1.7时HashMap在并发情况下为什么可能会成环？尾插法会成环吗？</strong></h5><h6 id="JDK1-7时HashMap在并发情况下为什么可能会成环？"><a href="#JDK1-7时HashMap在并发情况下为什么可能会成环？" class="headerlink" title="JDK1.7时HashMap在并发情况下为什么可能会成环？"></a>JDK1.7时HashMap在并发情况下为什么可能会成环？</h6><p>先看下put方法的在1.7下的源码：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> V <span class="title">put</span><span class="params">(K key, V value)</span> </span>&#123;</span><br><span class="line">      <span class="keyword">if</span> (key == <span class="keyword">null</span>)</span><br><span class="line">          <span class="keyword">return</span> putForNullKey(value);</span><br><span class="line">      <span class="keyword">int</span> hash = hash(key);</span><br><span class="line">      <span class="keyword">int</span> i = indexFor(hash, table.length);</span><br><span class="line">    <span class="comment">//当存在相同的key时，该循环会将新值放入，并将旧的值返回</span></span><br><span class="line">      <span class="keyword">for</span> (Entry&lt;K,V&gt; e = table[i]; e != <span class="keyword">null</span>; e = e.next) &#123;</span><br><span class="line">          Object k;</span><br><span class="line">          <span class="keyword">if</span> (e.hash == hash &amp;&amp; ((k = e.key) == key || key.equals(k))) &#123;</span><br><span class="line">              V oldValue = e.value;</span><br><span class="line">              e.value = value;</span><br><span class="line">              e.recordAccess(<span class="keyword">this</span>);</span><br><span class="line">              <span class="keyword">return</span> oldValue;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      modCount++;</span><br><span class="line">    <span class="comment">//当不存在相同的key时，新增key</span></span><br><span class="line">      addEntry(hash, key, value, i);</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
 <p>此时我们继续看<span id="addEntry">addEntry</span>方法，</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">addEntry</span><span class="params">(<span class="keyword">int</span> hash, K key, V value, <span class="keyword">int</span> bucketIndex)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 判断是否需要扩容,当前容量大小大于阈值并且当前数组下标位不为空时，才扩容</span></span><br><span class="line">       <span class="keyword">if</span> ((size &gt;= threshold) &amp;&amp; (<span class="keyword">null</span> != table[bucketIndex])) &#123;</span><br><span class="line">           resize(<span class="number">2</span> * table.length);</span><br><span class="line">           hash = (<span class="keyword">null</span> != key) ? hash(key) : <span class="number">0</span>;</span><br><span class="line">           bucketIndex = indexFor(hash, table.length);</span><br><span class="line">       &#125;</span><br><span class="line">       createEntry(hash, key, value, bucketIndex);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
@@ -260,22 +278,13 @@
 <p>​    我们先设计下尾插法的伪代码</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span>(<span class="keyword">null</span> != e) &#123;  </span><br><span class="line">             Entry&lt;K,V&gt; next = e.next;</span><br><span class="line">             <span class="comment">//计算下标</span></span><br><span class="line">             <span class="keyword">if</span> (rehash) &#123;</span><br><span class="line">                 e.hash = <span class="keyword">null</span> == e.key ? <span class="number">0</span> : hash(e.key);</span><br><span class="line">             &#125;</span><br><span class="line">             <span class="keyword">int</span> i = indexFor(e.hash, newCapacity);</span><br><span class="line">             </span><br><span class="line">          	Entry temp=newTable[i]</span><br><span class="line">             <span class="keyword">while</span>(temp.next!=<span class="keyword">null</span>)&#123;</span><br><span class="line">             	temp=temp.next;        </span><br><span class="line">             &#125;</span><br><span class="line">             temp.next=e;</span><br><span class="line">             e.next=<span class="keyword">null</span>;</span><br><span class="line">             e = next;</span><br><span class="line">         &#125;</span><br></pre></td></tr></table></figure>
 <p>暂时没想到成环，只是想到了可能更新后丢失了一部分数据。</p>
-</li>
-<li><p><strong>为什么1.7下选择头插法，而不是不会成环的尾插法？</strong></p>
-<p>当初有这个疑问是因为知道hashMap的用的头插法，但是不知道具体是怎么插入的，想着既然头插和尾插都会遍历整个链表判断是否已经存在，尾插法也能拿到尾节点，为什么要选头插法呢？<br>现在来看，可以从addEntry方法中看到，</p>
+<h6 id="为什么1-7下选择头插法，而不是不会成环的尾插法？"><a href="#为什么1-7下选择头插法，而不是不会成环的尾插法？" class="headerlink" title="为什么1.7下选择头插法，而不是不会成环的尾插法？**"></a>为什么1.7下选择头插法，而不是不会成环的尾插法？**</h6><p>当初有这个疑问是因为知道hashMap的用的头插法，但是不知道具体是怎么插入的，想着既然头插和尾插都会遍历整个链表判断是否已经存在，尾插法也能拿到尾节点，为什么要选头插法呢？<br>现在来看，可以从addEntry方法中看到，</p>
 <blockquote>
 <p>在resize中扩容时使用尾插法会每次都要遍历下链表</p>
 <p>并且因为可能会扩容，之前保存的尾节点在扩容后也可能不在是待插入节点的前置节点。</p>
 </blockquote>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">addEntry</span><span class="params">(<span class="keyword">int</span> hash, K key, V value, <span class="keyword">int</span> bucketIndex)</span> </span>&#123;</span><br><span class="line">     <span class="comment">// 判断是否需要扩容,当前容量大小大于阈值并且当前数组下标位不为空时，才扩容</span></span><br><span class="line">        <span class="keyword">if</span> ((size &gt;= threshold) &amp;&amp; (<span class="keyword">null</span> != table[bucketIndex])) &#123;</span><br><span class="line">            resize(<span class="number">2</span> * table.length);</span><br><span class="line">            hash = (<span class="keyword">null</span> != key) ? hash(key) : <span class="number">0</span>;</span><br><span class="line">            bucketIndex = indexFor(hash, table.length);</span><br><span class="line">        &#125;</span><br><span class="line">        createEntry(hash, key, value, bucketIndex);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-
-</li>
-</ol>
-<ol start="3">
-<li><strong>1.8以后的为什么选择红黑树？为什么在链表长度在8以后才转成红黑树？红黑树会有成环问题吗？</strong></li>
-</ol>
-
+<h5 id="2-1-8以后的为什么选择红黑树？为什么在链表长度在8以后才转成红黑树？红黑树会有成环问题吗？"><a href="#2-1-8以后的为什么选择红黑树？为什么在链表长度在8以后才转成红黑树？红黑树会有成环问题吗？" class="headerlink" title="2. 1.8以后的为什么选择红黑树？为什么在链表长度在8以后才转成红黑树？红黑树会有成环问题吗？"></a>2. <strong>1.8以后的为什么选择红黑树？为什么在链表长度在8以后才转成红黑树？红黑树会有成环问题吗？</strong></h5>
     </div>
 
     
@@ -283,14 +292,22 @@
     
 
       <footer class="post-footer">
+          
           <div class="post-tags">
-              <a href="/blog/tags/java-%E6%BA%90%E7%A0%81-HashMap/" rel="tag"># java 源码 HashMap</a>
+              <a href="/tags/java-%E6%BA%90%E7%A0%81-HashMap/" rel="tag"><i class="fa fa-tag"></i> java 源码 HashMap</a>
           </div>
 
         
 
 
         
+    <div class="post-nav">
+      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2021/01/15/%E6%8B%9C%E5%8D%A0%E5%BA%AD%E5%B0%86%E5%86%9B%E9%97%AE%E9%A2%98/" rel="next" title="拜占庭将军问题">
+      拜占庭将军问题 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
       </footer>
     
   </article>
@@ -340,16 +357,16 @@
 
       <ul class="sidebar-nav motion-element">
         <li class="sidebar-nav-toc">
-          Table of Contents
+          文章目录
         </li>
         <li class="sidebar-nav-overview">
-          Overview
+          站点概览
         </li>
       </ul>
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E6%B1%87%E6%80%BB"><span class="nav-number">1.</span> <span class="nav-text">问题汇总</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%AA%E4%BA%BA%E7%90%86%E8%A7%A3"><span class="nav-number">2.</span> <span class="nav-text">个人理解</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E6%B1%87%E6%80%BB"><span class="nav-number">1.</span> <span class="nav-text">问题汇总</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%AA%E4%BA%BA%E7%90%86%E8%A7%A3"><span class="nav-number">2.</span> <span class="nav-text">个人理解</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-JDK1-7%E6%97%B6HashMap%E5%9C%A8%E5%B9%B6%E5%8F%91%E6%83%85%E5%86%B5%E4%B8%8B%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%AF%E8%83%BD%E4%BC%9A%E6%88%90%E7%8E%AF%EF%BC%9F%E5%B0%BE%E6%8F%92%E6%B3%95%E4%BC%9A%E6%88%90%E7%8E%AF%E5%90%97%EF%BC%9F"><span class="nav-number">2.1.</span> <span class="nav-text">1. JDK1.7时HashMap在并发情况下为什么可能会成环？尾插法会成环吗？</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#JDK1-7%E6%97%B6HashMap%E5%9C%A8%E5%B9%B6%E5%8F%91%E6%83%85%E5%86%B5%E4%B8%8B%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%AF%E8%83%BD%E4%BC%9A%E6%88%90%E7%8E%AF%EF%BC%9F"><span class="nav-number">2.1.1.</span> <span class="nav-text">JDK1.7时HashMap在并发情况下为什么可能会成环？</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%881-7%E4%B8%8B%E9%80%89%E6%8B%A9%E5%A4%B4%E6%8F%92%E6%B3%95%EF%BC%8C%E8%80%8C%E4%B8%8D%E6%98%AF%E4%B8%8D%E4%BC%9A%E6%88%90%E7%8E%AF%E7%9A%84%E5%B0%BE%E6%8F%92%E6%B3%95%EF%BC%9F"><span class="nav-number">2.1.2.</span> <span class="nav-text">为什么1.7下选择头插法，而不是不会成环的尾插法？**</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-1-8%E4%BB%A5%E5%90%8E%E7%9A%84%E4%B8%BA%E4%BB%80%E4%B9%88%E9%80%89%E6%8B%A9%E7%BA%A2%E9%BB%91%E6%A0%91%EF%BC%9F%E4%B8%BA%E4%BB%80%E4%B9%88%E5%9C%A8%E9%93%BE%E8%A1%A8%E9%95%BF%E5%BA%A6%E5%9C%A88%E4%BB%A5%E5%90%8E%E6%89%8D%E8%BD%AC%E6%88%90%E7%BA%A2%E9%BB%91%E6%A0%91%EF%BC%9F%E7%BA%A2%E9%BB%91%E6%A0%91%E4%BC%9A%E6%9C%89%E6%88%90%E7%8E%AF%E9%97%AE%E9%A2%98%E5%90%97%EF%BC%9F"><span class="nav-number">2.2.</span> <span class="nav-text">2. 1.8以后的为什么选择红黑树？为什么在链表长度在8以后才转成红黑树？红黑树会有成环问题吗？</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -361,18 +378,31 @@
 <div class="site-state-wrap motion-element">
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
-          <a href="/blog/archives/">
+          <a href="/archives/">
         
-          <span class="site-state-item-count">1</span>
-          <span class="site-state-item-name">posts</span>
+          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-name">日志</span>
         </a>
       </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">tags</span>
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
 </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Leexiaobu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Leexiaobu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
 
 
 
@@ -401,7 +431,7 @@
   </span>
   <span class="author" itemprop="copyrightHolder">John Doe</span>
 </div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
 
         
@@ -418,19 +448,19 @@
   </div>
 
   
-  <script src="/blog/lib/anime.min.js"></script>
-  <script src="/blog/lib/velocity/velocity.min.js"></script>
-  <script src="/blog/lib/velocity/velocity.ui.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
 
-<script src="/blog/js/utils.js"></script>
+<script src="/js/utils.js"></script>
 
-<script src="/blog/js/motion.js"></script>
-
-
-<script src="/blog/js/schemes/pisces.js"></script>
+<script src="/js/motion.js"></script>
 
 
-<script src="/blog/js/next-boot.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
 
 
 
